@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MeltMarket - Precious Metals Calculator & Marketplace</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:#0d0d0d;color:#e8e0d0;min-height:100vh}
+#meltmarket-app{max-width:1200px;margin:0 auto;padding:0 16px}
+.mm-header{background:linear-gradient(135deg,#1a1200,#2d1f00);border-bottom:2px solid #c9a84c;padding:16px 0;text-align:center;position:sticky;top:0;z-index:100}
+.mm-logo{font-size:28px;font-weight:900;color:#c9a84c;letter-spacing:2px;text-shadow:0 0 20px rgba(201,168,76,.4)}
+.mm-tagline{font-size:12px;color:#8a7a5a;letter-spacing:3px;margin-top:4px;text-transform:uppercase}
+.mm-ticker{background:#111;padding:8px 0;overflow:hidden;border-bottom:1px solid #2a2000;white-space:nowrap}
+.ticker-inner{display:inline-flex;gap:32px;animation:scroll 20s linear infinite}
+@keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.tick-item{color:#c9a84c;font-size:13px;font-weight:600}
+.tick-metal{color:#8a7a5a;font-size:11px;margin-right:4px}
+.tick-sep{color:#3a3020;margin:0 8px}
+.mm-tabs{display:flex;background:#111;border-bottom:2px solid #2a2000;padding:0 16px;gap:4px;overflow-x:auto}
+.mm-tab-btn{padding:12px 20px;background:none;border:none;color:#8a7a5a;cursor:pointer;font-size:14px;font-weight:600;border-bottom:3px solid transparent;white-space:nowrap;transition:all .2s}
+.mm-tab-btn:hover{color:#c9a84c}
+.mm-tab-btn.active{color:#c9a84c;border-bottom-color:#c9a84c}
+.mm-tab-pane{display:none;padding:24px 16px}
+.mm-tab-pane.active{display:block}
+.section-title{font-size:22px;font-weight:800;color:#c9a84c;margin-bottom:20px;border-left:4px solid #c9a84c;padding-left:12px}
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media(max-width:700px){.calc-grid{grid-template-columns:1fr}}
+.calc-card{background:#161616;border:1px solid #2a2000;border-radius:12px;padding:24px}
+.metal-selector{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.metal-btn{padding:8px 16px;border:2px solid #3a3020;background:#1a1200;color:#8a7a5a;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;transition:all .2s}
+.metal-btn:hover,.metal-btn.active{border-color:#c9a84c;color:#c9a84c;background:#2d1f00}
+.spot-display{background:#1a1200;border:1px solid #c9a84c;border-radius:8px;padding:12px 16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+.spot-label{color:#8a7a5a;font-size:13px}
+#spot-display{color:#c9a84c;font-size:18px;font-weight:700}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;color:#8a7a5a;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.mm-input{width:100%;background:#0d0d0d;border:1px solid #2a2000;color:#e8e0d0;padding:10px 14px;border-radius:8px;font-size:15px;outline:none;transition:border-color .2s}
+.mm-input:focus{border-color:#c9a84c}
+.mm-select{width:100%;background:#0d0d0d;border:1px solid #2a2000;color:#e8e0d0;padding:10px 14px;border-radius:8px;font-size:14px;outline:none;cursor:pointer}
+.purity-ref{font-size:11px;color:#5a5040;margin-top:4px;font-style:italic}
+.mm-btn{background:linear-gradient(135deg,#c9a84c,#a07830);color:#0d0d0d;border:none;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;text-transform:uppercase;letter-spacing:1px}
+.mm-btn:hover{background:linear-gradient(135deg,#e0bf60,#b08840);transform:translateY(-1px)}
+.mm-btn-outline{background:none;border:2px solid #c9a84c;color:#c9a84c;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
+.mm-btn-outline:hover{background:#c9a84c;color:#0d0d0d}
+.mm-btn-sm{background:#2d1f00;border:1px solid #c9a84c;color:#c9a84c;padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;transition:all .2s}
+.mm-btn-sm:hover{background:#c9a84c;color:#0d0d0d}
+.btn-row{display:flex;gap:12px;margin-top:20px;flex-wrap:wrap}
+.calc-result{background:#1a1200;border:1px solid #c9a84c;border-radius:12px;padding:20px;margin-top:20px;display:none}
+.calc-result h3{color:#c9a84c;font-size:16px;margin-bottom:16px;text-align:center}
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.result-item{background:#0d0d0d;border:1px solid #2a2000;border-radius:8px;padding:12px}
+.result-label{color:#8a7a5a;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.result-value{color:#c9a84c;font-size:20px;font-weight:700}
+.result-value.big{font-size:28px;color:#ffd700}
+.quick-melt-section{margin-top:24px}
+.quick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:12px}
+.quick-card{background:#161616;border:1px solid #2a2000;border-radius:8px;padding:14px;cursor:pointer;transition:all .2s;text-align:center}
+.quick-card:hover{border-color:#c9a84c;background:#1a1200}
+.quick-label{font-size:12px;color:#8a7a5a;margin-bottom:6px}
+.quick-val{font-size:16px;font-weight:700;color:#c9a84c}
+.coin-controls{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+.coin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+.coin-card{background:#161616;border:1px solid #2a2000;border-radius:10px;padding:16px;cursor:pointer;transition:all .2s;text-align:center}
+.coin-card:hover{border-color:#c9a84c;background:#1a1200;transform:translateY(-2px)}
+.coin-icon{font-size:28px;margin-bottom:8px}
+.coin-name{font-size:13px;font-weight:700;color:#e8e0d0;margin-bottom:4px}
+.coin-year{font-size:11px;color:#8a7a5a;margin-bottom:6px}
+.coin-melt{font-size:12px;color:#c9a84c;font-weight:600}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;align-items:center;justify-content:center;padding:16px}
+.modal-box{background:#161616;border:1px solid #c9a84c;border-radius:16px;padding:28px;max-width:780px;width:100%;max-height:90vh;overflow-y:auto;position:relative}
+.modal-close{position:absolute;top:12px;right:16px;background:none;border:none;color:#8a7a5a;font-size:22px;cursor:pointer}
+.modal-close:hover{color:#c9a84c}
+.modal-coin-header{font-size:22px;font-weight:800;color:#c9a84c;margin-bottom:12px}
+.modal-meta{color:#8a7a5a;font-size:13px;margin-bottom:20px}
+.grade-table{width:100%;border-collapse:collapse}
+.grade-table th{background:#0d0d0d;color:#8a7a5a;font-size:11px;text-transform:uppercase;letter-spacing:1px;padding:10px;text-align:left;border-bottom:1px solid #2a2000}
+.grade-table td{padding:10px;border-bottom:1px solid #1a1a1a;font-size:13px}
+.grade-table tr:hover td{background:#1a1200}
+.coin-calc-box{background:#161616;border:1px solid #2a2000;border-radius:12px;padding:24px;margin-top:24px}
+.calc-res-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #1a1a1a}
+.calc-res-row .val{font-weight:700;color:#c9a84c}
+.calc-res-row .val.pos{color:#4caf50}
+.calc-res-row .val.neg{color:#f44336}
+.market-controls{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;align-items:center}
+.metal-filter-btn{padding:6px 14px;border:1px solid #2a2000;background:#161616;color:#8a7a5a;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;transition:all .2s}
+.metal-filter-btn.active,.metal-filter-btn:hover{border-color:#c9a84c;color:#c9a84c;background:#1a1200}
+.cat-btn{padding:6px 14px;border:1px solid #2a2000;background:#161616;color:#8a7a5a;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;transition:all .2s}
+.cat-btn.active,.cat-btn:hover{border-color:#8a7a5a;color:#e8e0d0;background:#1a1a1a}
+.listings-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.listing-card{background:#161616;border:1px solid #2a2000;border-radius:12px;padding:20px;display:flex;gap:16px;transition:all .2s}
+.listing-card:hover{border-color:#c9a84c;transform:translateY(-2px)}
+.listing-img{font-size:36px;flex-shrink:0}
+.listing-info{flex:1;min-width:0}
+.listing-title{font-size:14px;font-weight:700;color:#e8e0d0;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.listing-meta{font-size:11px;color:#5a5040;margin-bottom:6px}
+.listing-melt{font-size:12px;color:#8a7a5a;margin-bottom:8px}
+.listing-price{font-size:22px;font-weight:800;color:#c9a84c;margin-bottom:10px}
+.mm-btn-contact{background:#1a1200;border:1px solid #c9a84c;color:#c9a84c;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600;transition:all .2s}
+.mm-btn-contact:hover{background:#c9a84c;color:#0d0d0d}
+.no-results{text-align:center;color:#5a5040;padding:40px;font-size:16px}
+.post-steps{display:flex;gap:0;margin-bottom:28px;position:relative}
+.post-steps::before{content:'';position:absolute;top:18px;left:18px;right:18px;height:2px;background:#2a2000;z-index:0}
+.step-indicator{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;z-index:1}
+.step-num{width:36px;height:36px;border-radius:50%;background:#161616;border:2px solid #2a2000;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#5a5040;transition:all .3s}
+.step-indicator.active .step-num{border-color:#c9a84c;color:#c9a84c;background:#2d1f00}
+.step-indicator.done .step-num{background:#c9a84c;color:#0d0d0d;border-color:#c9a84c}
+.step-label{font-size:11px;color:#5a5040;text-align:center}
+.step-indicator.active .step-label{color:#c9a84c}
+.post-step{display:none}
+.post-step.active{display:block}
+.post-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:600px){.post-form-grid{grid-template-columns:1fr}}
+.melt-display-box{background:#1a1200;border:1px solid #c9a84c;border-radius:8px;padding:16px;margin-top:16px;display:flex;justify-content:space-between;align-items:center}
+.melt-label{color:#8a7a5a;font-size:13px}
+.melt-value{color:#c9a84c;font-size:24px;font-weight:800}
+.premium-display{color:#8a7a5a;font-size:12px;margin-top:4px}
+.prev-icon{font-size:48px;text-align:center;margin-bottom:12px}
+.prev-title{font-size:20px;font-weight:800;color:#c9a84c;text-align:center;margin-bottom:8px}
+.prev-meta{color:#8a7a5a;font-size:13px;text-align:center;margin-bottom:12px}
+.prev-melt{color:#4caf50;font-size:15px;text-align:center;margin-bottom:4px}
+.prev-prem{color:#ff9800;font-size:14px;text-align:center;margin-bottom:4px}
+.prev-price{font-size:28px;font-weight:900;color:#ffd700;text-align:center;margin-bottom:12px}
+.prev-desc{color:#8a7a5a;font-size:13px;text-align:center;padding:12px;background:#0d0d0d;border-radius:8px}
+#preview-card{background:#161616;border:2px solid #c9a84c;border-radius:16px;padding:28px;max-width:480px;margin:0 auto 24px}
+.success-banner{font-size:28px;font-weight:900;color:#4caf50;text-align:center;margin-bottom:16px}
+.success-detail{text-align:center;color:#8a7a5a;margin-bottom:8px;font-size:14px}
+.mm-toast{position:fixed;bottom:24px;right:24px;padding:14px 24px;border-radius:10px;font-weight:600;font-size:14px;transform:translateY(100px);opacity:0;transition:all .3s;z-index:9999}
+.mm-toast.success{background:#1b5e20;border:1px solid #4caf50;color:#a5d6a7}
+.mm-toast.error{background:#b71c1c;border:1px solid #f44336;color:#ffcdd2}
+.mm-toast.info{background:#1a2a3a;border:1px solid #c9a84c;color:#c9a84c}
+.mm-toast.show{transform:translateY(0);opacity:1}
+</style></head>
+<body>
+<div id="meltmarket-app">
+<div class="mm-header">
+<div class="mm-logo">⚖️ MELTMARKET</div>
+<div class="mm-tagline">Precious Metals Calculator · Coin Reference · Local Marketplace</div>
+</div>
+<div class="mm-ticker">
+<div class="ticker-inner" id="live-ticker">
+<span class="tick-item"><span class="tick-metal">GOLD</span> $4088.60</span>
+<span class="tick-sep">|</span>
+<span class="tick-item"><span class="tick-metal">SILVER</span> $59.05</span>
+<span class="tick-sep">|</span>
+<span class="tick-item"><span class="tick-metal">PLATINUM</span> $1615.00</span>
+<span class="tick-sep">|</span>
+<span class="tick-item"><span class="tick-metal">PALLADIUM</span> $1188.00</span>
+<span class="tick-sep">|</span>
+<span class="tick-item"><span class="tick-metal">COPPER</span> $0.33</span>
+<span class="tick-sep">|</span>
+<span class="tick-item"><span class="tick-metal">GOLD</span> $4088.60</span>
+<span class="tick-sep">|</span>
+<span class="tick-item"><span class="tick-metal">SILVER</span> $59.05</span>
+<span class="tick-sep">|</span>
+<span class="tick-item"><span class="tick-metal">PLATINUM</span> $1615.00</span>
+<span class="tick-sep">|</span>
+<span class="tick-item"><span class="tick-metal">PALLADIUM</span> $1188.00</span>
+<span class="tick-sep">|</span>
+<span class="tick-item"><span class="tick-metal">COPPER</span> $0.33</span>
+</div>
+</div>
+<div class="mm-tabs">
+<button class="mm-tab-btn active" data-tab="calc" onclick="showTab('calc')">⚖️ Melt Calculator</button>
+<button class="mm-tab-btn" data-tab="coins" onclick="showTab('coins')">🪙 Coin Database</button>
+<button class="mm-tab-btn" data-tab="marketplace" onclick="showTab('marketplace')">🏪 Marketplace</button>
+<button class="mm-tab-btn" data-tab="post" onclick="showTab('post')">📝 Post Listing</button>
+</div>
+
+<!-- CALC TAB -->
+<div id="tab-calc" class="mm-tab-pane active">
+<h2 class="section-title">Precious Metal Melt Calculator</h2>
+<div class="calc-grid">
+<div class="calc-card">
+<h3 style="color:#8a7a5a;font-size:14px;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px">Select Metal</h3>
+<div class="metal-selector">
+<button class="metal-btn active" data-metal="silver" onclick="setMetal('silver')">🥈 Silver</button>
+<button class="metal-btn" data-metal="gold" onclick="setMetal('gold')">🥇 Gold</button>
+<button class="metal-btn" data-metal="platinum" onclick="setMetal('platinum')">💎 Platinum</button>
+<button class="metal-btn" data-metal="palladium" onclick="setMetal('palladium')">⚗️ Palladium</button>
+<button class="metal-btn" data-metal="copper" onclick="setMetal('copper')">🟤 Copper</button>
+</div>
+<div class="spot-display">
+<span class="spot-label">Spot Price (<span id="metal-label">Silver</span>)</span>
+<span id="spot-display">$59.05/troy oz</span>
+</div>
+<div class="form-group">
+<label>Weight</label>
+<input type="number" id="weight-input" class="mm-input" placeholder="e.g. 26.73" step="0.001" min="0">
+</div>
+<div class="form-group">
+<label>Unit</label>
+<select id="unit-select" class="mm-select">
+<option value="troy_oz">Troy Ounce</option>
+<option value="gram" selected>Gram</option>
+<option value="pennyweight">Pennyweight (DWT)</option>
+<option value="grain">Grain</option>
+<option value="avoirdupois_oz">Avoirdupois Ounce</option>
+<option value="pound">Pound (Troy)</option>
+<option value="kilogram">Kilogram</option>
+</select>
+</div>
+<div class="form-group">
+<label>Purity (%)</label>
+<input type="number" id="purity-input" class="mm-input" placeholder="e.g. 92.5" step="0.01" min="0" max="100">
+<div class="purity-ref" id="purity-ref">Fine=99.9% | Sterling=92.5% | Coin=90% | 40%=40%</div>
+</div>
+<div class="btn-row">
+<button class="mm-btn" onclick="calcMelt()">Calculate Melt Value</button>
+<button class="mm-btn-outline" onclick="resetCalc()">Reset</button>
+</div>
+<div class="calc-result" id="calc-result">
+<h3>Melt Value Results</h3>
+<div class="result-grid">
+<div class="result-item">
+<div class="result-label">Pure Metal Weight</div>
+<div class="result-value" id="result-melt-oz">—</div>
+</div>
+<div class="result-item" style="grid-column:span 1">
+<div class="result-label">💰 Melt Value</div>
+<div class="result-value big" id="result-melt-val">—</div>
+</div>
+<div class="result-item">
+<div class="result-label">Spot Price Used</div>
+<div class="result-value" style="font-size:14px" id="result-spot">—</div>
+</div>
+<div class="result-item">
+<div class="result-label">Purity</div>
+<div class="result-value" style="font-size:14px" id="result-purity">—</div>
+</div>
+<div class="result-item" style="grid-column:span 2">
+<div class="result-label">Total Weight (troy oz)</div>
+<div class="result-value" style="font-size:14px" id="result-weight">—</div>
+</div>
+</div>
+</div>
+</div>
+<div>
+<div class="quick-melt-section">
+<h3 style="color:#8a7a5a;font-size:14px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">⚡ Quick Reference — Common Items</h3>
+<div class="quick-grid" id="quick-grid"></div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- COINS TAB -->
+<div id="tab-coins" class="mm-tab-pane">
+<h2 class="section-title">🪙 Numismatic Coin Database</h2>
+<div class="coin-controls">
+<input type="text" id="coin-search" class="mm-input" placeholder="Search coins..." style="max-width:280px" oninput="filterCoins()">
+<span style="color:#5a5040;font-size:13px">Click any coin for grade values vs melt value</span>
+</div>
+<div class="coin-grid" id="coin-grid"></div>
+<div class="coin-calc-box">
+<h3 style="color:#c9a84c;margin-bottom:16px;font-size:16px">📊 Coin Value Calculator</h3>
+<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+<div class="form-group" style="flex:1;min-width:200px;margin:0">
+<label>Select Coin</label>
+<select id="coin-calc-select" class="mm-select" style="margin-top:6px"></select>
+</div>
+<div class="form-group" style="flex:1;min-width:140px;margin:0">
+<label>Grade</label>
+<select id="coin-grade-select" class="mm-select" style="margin-top:6px">
+<option value="G4">G-4</option><option value="VG8">VG-8</option>
+<option value="F12">F-12</option><option value="VF20">VF-20</option>
+<option value="EF40">EF-40</option><option value="AU50">AU-50</option>
+<option value="MS60">MS-60</option><option value="MS63">MS-63</option>
+<option value="MS65">MS-65</option><option value="MS70">MS-70</option>
+</select>
+</div>
+<button class="mm-btn" onclick="calcCoin()">Compare</button>
+</div>
+<div id="coin-calc-result" style="display:none;margin-top:16px"></div>
+</div>
+</div>
+
+<!-- MARKETPLACE TAB -->
+<div id="tab-marketplace" class="mm-tab-pane">
+<h2 class="section-title">🏪 Local Marketplace</h2>
+<div class="market-controls">
+<input type="text" id="listing-search" class="mm-input" placeholder="Search listings..." style="max-width:220px" oninput="filterListings()">
+<div style="display:flex;gap:6px;flex-wrap:wrap">
+<button class="metal-filter-btn active" onclick="renderListings('all')">All Metals</button>
+<button class="metal-filter-btn" onclick="renderListings('gold')">🥇 Gold</button>
+<button class="metal-filter-btn" onclick="renderListings('silver')">🥈 Silver</button>
+<button class="metal-filter-btn" onclick="renderListings('platinum')">💎 Platinum</button>
+<button class="metal-filter-btn" onclick="renderListings('palladium')">⚗️ Palladium</button>
+<button class="metal-filter-btn" onclick="renderListings('copper')">🟤 Copper</button>
+</div>
+<div style="display:flex;gap:6px;flex-wrap:wrap">
+<button class="cat-btn active" onclick="filterCategory('all')">All</button>
+<button class="cat-btn" onclick="filterCategory('bullion')">Bullion</button>
+<button class="cat-btn" onclick="filterCategory('coins')">Coins</button>
+<button class="cat-btn" onclick="filterCategory('junk')">Junk Silver</button>
+</div>
+</div>
+<div class="listings-grid" id="listings-grid"></div>
+</div>
+
+<!-- POST LISTING TAB -->
+<div id="tab-post" class="mm-tab-pane">
+<h2 class="section-title">📝 Post a Listing</h2>
+<div class="post-steps">
+<div class="step-indicator active" id="si-1"><div class="step-num">1</div><div class="step-label">Details</div></div>
+<div class="step-indicator" id="si-2"><div class="step-num">2</div><div class="step-label">Metal Info</div></div>
+<div class="step-indicator" id="si-3"><div class="step-num">3</div><div class="step-label">Preview</div></div>
+<div class="step-indicator" id="si-4"><div class="step-num">4</div><div class="step-label">Publish</div></div>
+</div>
+<div id="step-1" class="post-step active">
+<div class="post-form-grid">
+<div class="form-group">
+<label>Listing Title *</label>
+<input type="text" id="post-title" class="mm-input" placeholder="e.g. Morgan Dollar 1881-S MS63">
+</div>
+<div class="form-group">
+<label>Metal Type *</label>
+<select id="post-metal" class="mm-select" onchange="updatePostCalc()">
+<option value="silver">Silver</option>
+<option value="gold">Gold</option>
+<option value="platinum">Platinum</option>
+<option value="palladium">Palladium</option>
+<option value="copper">Copper</option>
+</select>
+</div>
+<div class="form-group">
+<label>Category *</label>
+<select id="post-category" class="mm-select">
+<option value="coins">Numismatic Coins</option>
+<option value="bullion">Bullion</option>
+<option value="junk">Junk Silver</option>
+<option value="other">Other</option>
+</select>
+</div>
+<div class="form-group">
+<label>Asking Price ($) *</label>
+<input type="number" id="post-price" class="mm-input" placeholder="0.00" oninput="updatePriceCalc()">
+</div>
+<div class="form-group" style="grid-column:span 2">
+<label>Your Location *</label>
+<input type="text" id="post-location" class="mm-input" placeholder="City, State">
+</div>
+<div class="form-group" style="grid-column:span 2">
+<label>Description</label>
+<textarea id="post-desc" class="mm-input" rows="4" placeholder="Describe your item in detail..."></textarea>
+</div>
+</div>
+<div class="melt-display-box" style="display:none" id="price-calc-box">
+<div><div class="melt-label">Premium Over Melt</div><div class="premium-display" id="post-premium-display">$0.00</div></div>
+</div>
+<div style="margin-top:20px"><button class="mm-btn" onclick="goStep(2)">Next: Metal Info →</button></div>
+</div>
+<div id="step-2" class="post-step">
+<div class="post-form-grid">
+<div class="form-group">
+<label>Weight (grams) *</label>
+<input type="number" id="post-weight" class="mm-input" placeholder="e.g. 26.73" oninput="updatePostCalc()">
+</div>
+<div class="form-group">
+<label>Purity (%) *</label>
+<input type="number" id="post-purity" class="mm-input" placeholder="e.g. 90" oninput="updatePostCalc()">
+</div>
+</div>
+<div class="melt-display-box">
+<div><div class="melt-label">Estimated Melt Value</div></div>
+<div class="melt-value" id="post-melt-display">$0.00</div>
+</div>
+<div style="display:flex;gap:12px;margin-top:20px">
+<button class="mm-btn-outline" onclick="goStep(1)">← Back</button>
+<button class="mm-btn" onclick="goStep(3)">Preview Listing →</button>
+</div>
+</div>
+<div id="step-3" class="post-step">
+<div id="preview-card"></div>
+<div style="display:flex;gap:12px;justify-content:center">
+<button class="mm-btn-outline" onclick="goStep(2)">← Edit</button>
+<button class="mm-btn" onclick="goStep(4)">🚀 Publish Listing</button>
+</div>
+</div>
+<div id="step-4" class="post-step"></div>
+</div>
+
+</div><!-- end app -->
+<div id="coin-modal" class="modal-overlay" onclick="if(event.target===this)closeModal()">
+<div class="modal-box">
+<button class="modal-close" onclick="closeModal()">✕</button>
+<div id="modal-body"></div>
+</div>
+</div><script>
+const SPOT_PRICES = {
+  gold: 4088.60, silver: 59.05, platinum: 1615.00, palladium: 1188.00, copper: 0.3326
+};
+const COIN_DB = [
+  {id:1,name:"Morgan Dollar",year:"1878-1921",metal:"silver",weight:26.73,purity:0.9000,denom:1.00,grades:{G4:35,VG8:38,F12:42,VF20:50,EF40:75,AU50:110,MS60:145,MS63:275,MS65:1200}},
+  {id:2,name:"Peace Dollar",year:"1921-1935",metal:"silver",weight:26.73,purity:0.9000,denom:1.00,grades:{G4:32,VG8:35,F12:38,VF20:45,EF40:65,AU50:95,MS60:125,MS63:250,MS65:1500}},
+  {id:3,name:"Walking Liberty Half",year:"1916-1947",metal:"silver",weight:12.50,purity:0.9000,denom:0.50,grades:{G4:14,VG8:15,F12:18,VF20:25,EF40:40,AU50:60,MS60:80,MS63:175,MS65:900}},
+  {id:4,name:"Franklin Half",year:"1948-1963",metal:"silver",weight:12.50,purity:0.9000,denom:0.50,grades:{G4:12,VG8:13,F12:14,VF20:16,EF40:22,AU50:35,MS60:50,MS63:100,MS65:600}},
+  {id:5,name:"Kennedy Half (90%)",year:"1964",metal:"silver",weight:12.50,purity:0.9000,denom:0.50,grades:{G4:11,VG8:12,F12:13,VF20:14,EF40:18,AU50:25,MS60:35,MS63:65,MS65:300}},
+  {id:6,name:"Kennedy Half (40%)",year:"1965-1970",metal:"silver",weight:11.50,purity:0.4000,denom:0.50,grades:{G4:4,VG8:4,F12:5,VF20:5,EF40:6,AU50:8,MS60:10,MS63:18,MS65:80}},
+  {id:7,name:"Washington Quarter (90%)",year:"1932-1964",metal:"silver",weight:6.25,purity:0.9000,denom:0.25,grades:{G4:6,VG8:7,F12:8,VF20:10,EF40:15,AU50:22,MS60:30,MS63:60,MS65:350}},
+  {id:8,name:"Roosevelt Dime (90%)",year:"1946-1964",metal:"silver",weight:2.50,purity:0.9000,denom:0.10,grades:{G4:2.5,VG8:3,F12:3.5,VF20:4,EF40:5,AU50:8,MS60:12,MS63:20,MS65:125}},
+  {id:9,name:"Mercury Dime",year:"1916-1945",metal:"silver",weight:2.50,purity:0.9000,denom:0.10,grades:{G4:3,VG8:4,F12:5,VF20:7,EF40:12,AU50:18,MS60:25,MS63:55,MS65:350}},
+  {id:10,name:"Barber Quarter",year:"1892-1916",metal:"silver",weight:6.25,purity:0.9000,denom:0.25,grades:{G4:6,VG8:8,F12:15,VF20:35,EF40:80,AU50:150,MS60:250,MS63:600,MS65:3500}},
+  {id:11,name:"Barber Dime",year:"1892-1916",metal:"silver",weight:2.50,purity:0.9000,denom:0.10,grades:{G4:4,VG8:6,F12:12,VF20:25,EF40:60,AU50:110,MS60:175,MS63:450,MS65:2500}},
+  {id:12,name:"Barber Half",year:"1892-1915",metal:"silver",weight:12.50,purity:0.9000,denom:0.50,grades:{G4:14,VG8:18,F12:35,VF20:80,EF40:200,AU50:375,MS60:600,MS63:1500,MS65:9000}},
+  {id:13,name:"Indian Head Cent",year:"1859-1909",metal:"copper",weight:3.11,purity:0.9500,denom:0.01,grades:{G4:3,VG8:5,F12:8,VF20:18,EF40:40,AU50:70,MS60:110,MS63:250,MS65:1800}},
+  {id:14,name:"Lincoln Wheat Cent",year:"1909-1958",metal:"copper",weight:3.11,purity:0.9500,denom:0.01,grades:{G4:0.05,VG8:0.08,F12:0.15,VF20:0.35,EF40:1,AU50:3,MS60:8,MS63:20,MS65:150}},
+  {id:15,name:"Buffalo Nickel",year:"1913-1938",metal:"copper",weight:5.00,purity:0.7500,denom:0.05,grades:{G4:4,VG8:8,F12:14,VF20:22,EF40:50,AU50:90,MS60:130,MS63:280,MS65:1800}},
+  {id:16,name:"Saint-Gaudens $20",year:"1907-1933",metal:"gold",weight:33.44,purity:0.9000,denom:20.00,grades:{F12:2200,VF20:2300,EF40:2400,AU50:2500,MS60:2650,MS63:3200,MS65:8500}},
+  {id:17,name:"Liberty Head $20",year:"1850-1907",metal:"gold",weight:33.44,purity:0.9000,denom:20.00,grades:{F12:2200,VF20:2250,EF40:2350,AU50:2450,MS60:2600,MS63:3000,MS65:12000}},
+  {id:18,name:"Indian Head $10",year:"1907-1933",metal:"gold",weight:16.72,purity:0.9000,denom:10.00,grades:{F12:1100,VF20:1150,EF40:1200,AU50:1300,MS60:1450,MS63:2000,MS65:18000}},
+  {id:19,name:"Liberty Head $10",year:"1838-1907",metal:"gold",weight:16.72,purity:0.9000,denom:10.00,grades:{F12:1050,VF20:1100,EF40:1150,AU50:1250,MS60:1400,MS63:1900,MS65:15000}},
+  {id:20,name:"Indian Head $5",year:"1908-1929",metal:"gold",weight:8.36,purity:0.9000,denom:5.00,grades:{F12:550,VF20:575,EF40:600,AU50:650,MS60:750,MS63:1100,MS65:9000}},
+  {id:21,name:"Liberty Head $5",year:"1839-1908",metal:"gold",weight:8.36,purity:0.9000,denom:5.00,grades:{F12:525,VF20:550,EF40:575,AU50:625,MS60:725,MS63:1050,MS65:8500}},
+  {id:22,name:"Indian Head $2.50",year:"1908-1929",metal:"gold",weight:4.18,purity:0.9000,denom:2.50,grades:{F12:280,VF20:295,EF40:310,AU50:350,MS60:420,MS63:650,MS65:5500}},
+  {id:23,name:"American Gold Eagle 1oz",year:"1986-present",metal:"gold",weight:31.10,purity:0.9167,denom:50.00,grades:{MS60:4100,MS63:4125,MS65:4200,MS70:4500}},
+  {id:24,name:"American Silver Eagle 1oz",year:"1986-present",metal:"silver",weight:31.10,purity:0.9993,denom:1.00,grades:{MS60:40,MS63:42,MS65:46,MS70:85}},
+  {id:25,name:"American Gold Buffalo 1oz",year:"2006-present",metal:"gold",weight:31.10,purity:0.9999,denom:50.00,grades:{MS60:4100,MS63:4130,MS65:4220,MS70:4700}},
+  {id:26,name:"Canadian Maple Leaf 1oz Silver",year:"1988-present",metal:"silver",weight:31.10,purity:0.9999,denom:5.00,grades:{MS60:38,MS63:40,MS65:44,MS70:70}},
+  {id:27,name:"Trade Dollar",year:"1873-1885",metal:"silver",weight:27.22,purity:0.9000,denom:1.00,grades:{G4:40,VG8:50,F12:65,VF20:90,EF40:160,AU50:275,MS60:450,MS63:1200,MS65:9000}},
+  {id:28,name:"Seated Liberty Dollar",year:"1840-1873",metal:"silver",weight:26.73,purity:0.9000,denom:1.00,grades:{G4:200,VG8:250,F12:325,VF20:450,EF40:700,AU50:1100,MS60:1800,MS63:4500,MS65:28000}},
+  {id:29,name:"Eisenhower Dollar",year:"1971-1978",metal:"copper",weight:22.68,purity:0.0000,denom:1.00,grades:{MS60:3,MS63:5,MS65:18,MS67:85}},
+  {id:30,name:"Susan B. Anthony Dollar",year:"1979-1999",metal:"copper",weight:8.10,purity:0.0000,denom:1.00,grades:{MS60:2,MS63:3,MS65:10,MS67:40}}
+];
+const LISTINGS = [
+  {id:1,title:"Morgan Dollar 1881-S MS63",metal:"silver",category:"coins",price:285,meltVal:26.52,location:"Phoenix, AZ",seller:"CactusCoins",date:"2024-01-15",img:"🪙",desc:"Beautiful 1881-S Morgan in MS63. Strong luster, well struck."},
+  {id:2,title:"90% Silver Junk Lot - $100 FV",metal:"silver",category:"junk",price:5900,meltVal:5320,location:"Denver, CO",seller:"RockyMtnSilver",date:"2024-01-14",img:"💰",desc:"Full $100 face value bag of 90% silver coins. Mixed dates."},
+  {id:3,title:"1oz Gold American Eagle MS70",metal:"gold",category:"bullion",price:4250,meltVal:3749,location:"Dallas, TX",seller:"TexasGoldman",date:"2024-01-13",img:"🦅",desc:"Perfect MS70 2023 American Gold Eagle. NGC certified."},
+  {id:4,title:"Saint-Gaudens $20 EF40",metal:"gold",category:"coins",price:2450,meltVal:1998,location:"Chicago, IL",seller:"WindyCityGold",date:"2024-01-12",img:"🏛️",desc:"Nice EF40 Saint-Gaudens double eagle. Great eye appeal."},
+  {id:5,title:"100oz Silver Bar - Engelhard",metal:"silver",category:"bullion",price:6100,meltVal:5905,location:"Seattle, WA",seller:"PNWBullion",date:"2024-01-11",img:"🔲",desc:"Vintage Engelhard 100oz silver bar. .999 fine. Serial numbered."},
+  {id:6,title:"Platinum Maple Leaf 1oz",metal:"platinum",category:"bullion",price:1680,meltVal:1615,location:"Miami, FL",seller:"SunshineMetals",date:"2024-01-10",img:"💎",desc:"2023 Canadian Platinum Maple Leaf. .9995 fine. BU condition."},
+  {id:7,title:"Walker Half Dollar Lot x20",metal:"silver",category:"coins",price:320,meltVal:290,location:"Nashville, TN",seller:"VolunteerCoins",date:"2024-01-09",img:"🪙",desc:"20 Walking Liberty Halves, mixed dates. Average circulated."},
+  {id:8,title:"10oz Gold Bar - PAMP Suisse",metal:"gold",category:"bullion",price:41500,meltVal:40886,location:"New York, NY",seller:"MidtownMetals",date:"2024-01-08",img:"🥇",desc:"PAMP Suisse 10oz gold bar with assay card. .9999 fine."},
+  {id:9,title:"Mercury Dimes - Roll of 50",metal:"silver",category:"coins",price:155,meltVal:132,location:"Portland, OR",seller:"CascadeCoins",date:"2024-01-07",img:"🪙",desc:"50-coin roll Mercury Dimes. Mixed dates, all genuine."},
+  {id:10,title:"Palladium Maple Leaf 1oz",metal:"palladium",category:"bullion",price:1230,meltVal:1188,location:"Boston, MA",seller:"BeantownBullion",date:"2024-01-06",img:"⚗️",desc:"2023 Canadian Palladium Maple Leaf. .9995 fine. Brilliant uncirculated."},
+  {id:11,title:"Indian Head $5 Gold VF20",metal:"gold",category:"coins",price:590,meltVal:456,location:"Atlanta, GA",seller:"PeachStateGold",date:"2024-01-05",img:"🏛️",desc:"1913-D Indian Head Half Eagle in VF20. Nice original surfaces."},
+  {id:12,title:"Copper Penny Lot - 5000 pcs",metal:"copper",category:"junk",price:45,meltVal:52,location:"Cleveland, OH",seller:"BuckeySilver",date:"2024-01-04",img:"🪙",desc:"5000 pre-1982 Lincoln cents. All copper. Good for melt or sorting."}
+];
+const QUICK_ITEMS = [
+  {label:"Silver Eagle 1oz",metal:"silver",weight:31.10,purity:0.9993},
+  {label:"Morgan Dollar",metal:"silver",weight:26.73,purity:0.9000},
+  {label:"90% Quarter",metal:"silver",weight:6.25,purity:0.9000},
+  {label:"90% Dime",metal:"silver",weight:2.50,purity:0.9000},
+  {label:"90% Half Dollar",metal:"silver",weight:12.50,purity:0.9000},
+  {label:"40% Half Dollar",metal:"silver",weight:11.50,purity:0.4000},
+  {label:"Gold Eagle 1oz",metal:"gold",weight:31.10,purity:0.9167},
+  {label:"Gold Eagle 1/2oz",metal:"gold",weight:15.55,purity:0.9167},
+  {label:"Gold Eagle 1/4oz",metal:"gold",weight:7.78,purity:0.9167},
+  {label:"St-Gaudens $20",metal:"gold",weight:33.44,purity:0.9000},
+  {label:"Platinum Eagle 1oz",metal:"platinum",weight:31.10,purity:0.9995},
+  {label:"Palladium Eagle 1oz",metal:"palladium",weight:31.10,purity:0.9995}
+];
+let currentMetal='silver',currentStep=1,postData={},activeListingMetal='all',activeListingCat='all',coinSearch='';
+function showTab(t){document.querySelectorAll('.mm-tab-btn').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.mm-tab-pane').forEach(p=>p.classList.remove('active'));document.querySelector('[data-tab="'+t+'"]').classList.add('active');document.getElementById('tab-'+t).classList.add('active');if(t==='marketplace')renderListings();if(t==='coins')renderCoins();}
+function setMetal(m){currentMetal=m;document.querySelectorAll('.metal-btn').forEach(b=>b.classList.remove('active'));document.querySelector('[data-metal="'+m+'"]').classList.add('active');document.getElementById('metal-label').textContent=m.charAt(0).toUpperCase()+m.slice(1);document.getElementById('spot-display').textContent='$'+SPOT_PRICES[m].toFixed(2)+'/troy oz';updatePurityRef();renderQuickMelt();}
+function calcMelt(){const wt=parseFloat(document.getElementById('weight-input').value)||0;const pur=parseFloat(document.getElementById('purity-input').value)/100||0;const unit=document.getElementById('unit-select').value;const spot=SPOT_PRICES[currentMetal];const troy=convertWeight(wt,unit);const meltVal=troy*pur*spot;const meltOz=troy*pur;document.getElementById('result-melt-oz').textContent=meltOz.toFixed(4)+' troy oz';document.getElementById('result-melt-val').textContent='$'+meltVal.toFixed(2);document.getElementById('result-spot').textContent='$'+spot.toFixed(2)+'/troy oz';document.getElementById('result-purity').textContent=(pur*100).toFixed(2)+'%';document.getElementById('result-weight').textContent=troy.toFixed(4)+' troy oz';document.getElementById('calc-result').style.display='block';}
+function resetCalc(){document.getElementById('weight-input').value='';document.getElementById('purity-input').value='';document.getElementById('calc-result').style.display='none';}
+function convertWeight(val,unit){const f={troy_oz:1,gram:0.032151,pennyweight:0.05,grain:0.002083,avoirdupois_oz:0.911458,pound:10.9375,kilogram:32.1507};return val*(f[unit]||1);}
+function updatePurityRef(){const r={gold:'24K=99.9% | 22K=91.7% | 18K=75% | 14K=58.3% | 10K=41.7%',silver:'Fine=99.9% | Sterling=92.5% | Coin=90% | 40%=40%',platinum:'Fine=99.5% | 950=95% | 900=90% | 850=85%',palladium:'Fine=99.5% | 950=95%',copper:'Fine=99.9% | Coin=95% | Bronze=88%'};document.getElementById('purity-ref').textContent=r[currentMetal]||'';}
+function renderQuickMelt(){const items=QUICK_ITEMS.filter(i=>i.metal===currentMetal);const grid=document.getElementById('quick-grid');if(!grid)return;grid.innerHTML=items.map(i=>{const val=i.weight*i.purity*SPOT_PRICES[i.metal]/31.1035;return'<div class="quick-card" onclick="quickFill('+JSON.stringify(i).replace(/"/g,"&quot;")+')">'+'<div class="quick-label">'+i.label+'</div>'+'<div class="quick-val">$'+val.toFixed(2)+'</div>'+'</div>';}).join('');}
+function quickFill(item){document.getElementById('weight-input').value=item.weight;document.getElementById('purity-input').value=(item.purity*100).toFixed(2);document.getElementById('unit-select').value='gram';calcMelt();}
+function renderCoins(search){const s=(search||coinSearch||'').toLowerCase();const filtered=COIN_DB.filter(c=>!s||c.name.toLowerCase().includes(s)||c.year.includes(s)||c.metal.includes(s));const grid=document.getElementById('coin-grid');if(!grid)return;grid.innerHTML=filtered.map(c=>{const meltVal=(c.weight/31.1035)*c.purity*SPOT_PRICES[c.metal];const icon={gold:'🥇',silver:'🥈',copper:'🟤',platinum:'💎',palladium:'⚗️'}[c.metal]||'🪙';return'<div class="coin-card" onclick="showCoin('+c.id+')">'+'<div class="coin-icon">'+icon+'</div>'+'<div class="coin-name">'+c.name+'</div>'+'<div class="coin-year">'+c.year+'</div>'+'<div class="coin-melt">Melt: $'+meltVal.toFixed(2)+'</div>'+'</div>';}).join('');}
+function filterCoins(){coinSearch=document.getElementById('coin-search').value;renderCoins(coinSearch);}
+function showCoin(id){const c=COIN_DB.find(x=>x.id===id);if(!c)return;const meltVal=(c.weight/31.1035)*c.purity*SPOT_PRICES[c.metal];const icon={gold:'🥇',silver:'🥈',copper:'🟤',platinum:'💎',palladium:'⚗️'}[c.metal]||'🪙';const gradeRows=Object.entries(c.grades).map(([g,v])=>{const pct=meltVal>0?((v/meltVal)*100).toFixed(0):'N/A';return'<tr><td><strong>'+g+'</strong></td><td>$'+v.toFixed(2)+'</td><td>$'+meltVal.toFixed(2)+'</td><td>'+pct+'%</td><td><button class="mm-btn-sm" onclick="postCoin('+id+',''+g+'','+v+')">📝 Post</button></td></tr>';}).join('');document.getElementById('modal-body').innerHTML='<div class="modal-coin-header">'+icon+' '+c.name+'</div>'+'<div class="modal-meta">'+c.year+' | '+c.metal.charAt(0).toUpperCase()+c.metal.slice(1)+' | Weight: '+c.weight+'g | Purity: '+(c.purity*100)+'% | Melt: <strong>$'+meltVal.toFixed(2)+'</strong></div>'+'<div style="overflow-x:auto"><table class="grade-table"><thead><tr><th>Grade</th><th>Book Value</th><th>Melt Value</th><th>Premium</th><th>Action</th></tr></thead><tbody>'+gradeRows+'</tbody></table></div>';document.getElementById('coin-modal').style.display='flex';}
+function closeModal(){document.getElementById('coin-modal').style.display='none';}
+function postCoin(id,grade,price){closeModal();const c=COIN_DB.find(x=>x.id===id);if(!c)return;postData={title:c.name+' '+grade,metal:c.metal,weight:c.weight,purity:(c.purity*100),price:price,category:'coins'};showTab('post');setTimeout(()=>{document.getElementById('post-title').value=postData.title||'';document.getElementById('post-metal').value=postData.metal||'silver';document.getElementById('post-weight').value=postData.weight||'';document.getElementById('post-purity').value=postData.purity||'';document.getElementById('post-category').value=postData.category||'coins';updatePostCalc();},100);}
+function calcCoin(){const id=parseInt(document.getElementById('coin-calc-select').value);const grade=document.getElementById('coin-grade-select').value;const c=COIN_DB.find(x=>x.id===id);if(!c||!grade)return;const meltVal=(c.weight/31.1035)*c.purity*SPOT_PRICES[c.metal];const bookVal=c.grades[grade]||0;const premium=bookVal-meltVal;document.getElementById('coin-calc-result').innerHTML='<div class="calc-res-row"><span>Melt Value</span><span class="val">$'+meltVal.toFixed(2)+'</span></div>'+'<div class="calc-res-row"><span>Book Value ('+grade+')</span><span class="val">$'+bookVal.toFixed(2)+'</span></div>'+'<div class="calc-res-row"><span>Numismatic Premium</span><span class="val '+(premium>=0?'pos':'neg')+'">$'+premium.toFixed(2)+'</span></div>'+'<div class="calc-res-row"><span>Spot Price</span><span class="val">$'+SPOT_PRICES[c.metal].toFixed(2)+'/troy oz</span></div>';document.getElementById('coin-calc-result').style.display='block';}
+function renderListings(metal,cat){if(metal!==undefined)activeListingMetal=metal;if(cat!==undefined)activeListingCat=cat;let items=LISTINGS;if(activeListingMetal!=='all')items=items.filter(i=>i.metal===activeListingMetal);if(activeListingCat!=='all')items=items.filter(i=>i.category===activeListingCat);const searchEl=document.getElementById('listing-search');if(searchEl&&searchEl.value){const s=searchEl.value.toLowerCase();items=items.filter(i=>i.title.toLowerCase().includes(s)||i.location.toLowerCase().includes(s)||i.desc.toLowerCase().includes(s));}const grid=document.getElementById('listings-grid');if(!grid)return;grid.innerHTML=items.map(i=>{const prem=i.price-i.meltVal;const premPct=i.meltVal>0?((prem/i.meltVal)*100).toFixed(1):'0';return'<div class="listing-card">'+'<div class="listing-img">'+i.img+'</div>'+'<div class="listing-info">'+'<div class="listing-title">'+i.title+'</div>'+'<div class="listing-meta">📍 '+i.location+' | 👤 '+i.seller+'</div>'+'<div class="listing-melt">Melt: $'+i.meltVal.toFixed(2)+' | Premium: '+(prem>=0?'+':'')+prem.toFixed(2)+' ('+premPct+'%)</div>'+'<div class="listing-price">$'+i.price.toFixed(2)+'</div>'+'<button class="mm-btn-contact" onclick="contactSeller(''+i.seller+'',''+i.title+'')">Contact Seller</button>'+'</div></div>';}).join('')||'<div class="no-results">No listings found. Be the first to post!</div>';}
+function filterListings(){renderListings();}
+function filterCategory(cat){activeListingCat=cat;document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));event.target.classList.add('active');renderListings();}
+function contactSeller(seller,title){showToast('Message sent to '+seller+' about: '+title,'success');}
+function goStep(n){if(n>1){const title=document.getElementById('post-title').value.trim();const price=document.getElementById('post-price').value;const loc=document.getElementById('post-location').value.trim();if(!title||!price||!loc){showToast('Please fill in all required fields','error');return;}}if(n>2){const wt=document.getElementById('post-weight').value;const pur=document.getElementById('post-purity').value;if(!wt||!pur){showToast('Please enter weight and purity','error');return;}}currentStep=n;document.querySelectorAll('.post-step').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.step-indicator').forEach((s,i)=>{s.classList.toggle('active',i+1<=n);s.classList.toggle('done',i+1<n);});document.getElementById('step-'+n).classList.add('active');if(n===3)buildPreview();if(n===4)publishListing();}
+function updatePostCalc(){const metal=document.getElementById('post-metal').value;const wt=parseFloat(document.getElementById('post-weight').value)||0;const pur=parseFloat(document.getElementById('post-purity').value)/100||0;const spot=SPOT_PRICES[metal]||0;const melt=(wt/31.1035)*pur*spot;document.getElementById('post-melt-display').textContent='$'+melt.toFixed(2);}
+function updatePriceCalc(){const price=parseFloat(document.getElementById('post-price').value)||0;const metal=document.getElementById('post-metal').value;const wt=parseFloat(document.getElementById('post-weight').value)||0;const pur=parseFloat(document.getElementById('post-purity').value)/100||0;const spot=SPOT_PRICES[metal]||0;const melt=(wt/31.1035)*pur*spot;const prem=price-melt;const premPct=melt>0?((prem/melt)*100).toFixed(1):'0';document.getElementById('post-premium-display').textContent=(prem>=0?'+':'')+'$'+prem.toFixed(2)+' ('+premPct+'% over melt)';}
+function buildPreview(){const title=document.getElementById('post-title').value;const metal=document.getElementById('post-metal').value;const cat=document.getElementById('post-category').value;const price=parseFloat(document.getElementById('post-price').value)||0;const wt=parseFloat(document.getElementById('post-weight').value)||0;const pur=parseFloat(document.getElementById('post-purity').value)/100||0;const loc=document.getElementById('post-location').value;const desc=document.getElementById('post-desc').value;const melt=(wt/31.1035)*pur*(SPOT_PRICES[metal]||0);const prem=price-melt;postData={title,metal,cat,price,wt,pur,loc,desc,melt,prem};const icon={gold:'🥇',silver:'🥈',platinum:'💎',palladium:'⚗️',copper:'🟤'}[metal]||'🪙';document.getElementById('preview-card').innerHTML='<div class="prev-icon">'+icon+'</div>'+'<div class="prev-title">'+title+'</div>'+'<div class="prev-meta">'+metal.toUpperCase()+' | '+cat+' | 📍'+loc+'</div>'+'<div class="prev-melt">Melt Value: $'+melt.toFixed(2)+'</div>'+'<div class="prev-prem">Premium: '+(prem>=0?'+':'')+'$'+prem.toFixed(2)+'</div>'+'<div class="prev-price">Asking: $'+price.toFixed(2)+'</div>'+'<div class="prev-desc">'+desc+'</div>';}
+function publishListing(){const newListing={id:LISTINGS.length+1,title:postData.title,metal:postData.metal,category:postData.cat,price:postData.price,meltVal:parseFloat(postData.melt)||0,location:postData.loc,seller:'You',date:new Date().toISOString().split('T')[0],img:{gold:'🥇',silver:'🥈',platinum:'💎',palladium:'⚗️',copper:'🟤'}[postData.metal]||'🪙',desc:postData.desc};LISTINGS.unshift(newListing);document.getElementById('step-4').innerHTML='<div class="success-banner">🎉 Listing Published!</div>'+'<div class="success-detail">Your listing for <strong>'+postData.title+'</strong> is now live in the MeltMarket Marketplace.</div>'+'<div class="success-detail">Asking price: <strong>$'+postData.price+'</strong> | Melt value: <strong>$'+(postData.melt||0).toFixed(2)+'</strong></div>'+'<div style="margin-top:20px;display:flex;gap:12px;justify-content:center"><button class="mm-btn" onclick="showTab('marketplace')">View in Marketplace</button><button class="mm-btn" onclick="resetPost()">Post Another</button></div>';}
+function resetPost(){currentStep=1;postData={};['post-title','post-price','post-location','post-weight','post-purity','post-desc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});goStep(1);document.getElementById('step-4').innerHTML='';document.getElementById('post-melt-display').textContent='$0.00';}
+function showToast(msg,type){const t=document.createElement('div');t.className='mm-toast '+(type||'info');t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.classList.add('show'),10);setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),300);},3000);}
+function updateTicker(){const fluctuate=(p)=>p*(1+(Math.random()-0.5)*0.001);Object.keys(SPOT_PRICES).forEach(m=>{SPOT_PRICES[m]=parseFloat(fluctuate(SPOT_PRICES[m]).toFixed(4));});const tickerEl=document.getElementById('live-ticker');if(tickerEl){tickerEl.innerHTML=Object.entries(SPOT_PRICES).map(([m,p])=>'<span class="tick-item"><span class="tick-metal">'+m.toUpperCase()+'</span> $'+p.toFixed(2)+'</span>').join('<span class="tick-sep">|</span>')+'<span class="tick-sep">|</span>'+Object.entries(SPOT_PRICES).map(([m,p])=>'<span class="tick-item"><span class="tick-metal">'+m.toUpperCase()+'</span> $'+p.toFixed(2)+'</span>').join('<span class="tick-sep">|</span>');}const sd=document.getElementById('spot-display');if(sd)sd.textContent='$'+SPOT_PRICES[currentMetal].toFixed(2)+'/troy oz';}
+function populateCoinSelect(){const sel=document.getElementById('coin-calc-select');if(!sel)return;sel.innerHTML=COIN_DB.map(c=>'<option value="'+c.id+'">'+c.name+' ('+c.year+')</option>').join('');}
+setInterval(updateTicker,5000);
+window.addEventListener('load',function(){setMetal('silver');renderQuickMelt();renderListings();renderCoins();populateCoinSelect();updatePurityRef();updateTicker();});
+</script>
+</body>
+</html>
