@@ -424,15 +424,17 @@ function goToStep(n){
 function buildReview(){
   var r=document.getElementById("reviewContent");
   if(!r)return;
-  r.innerHTML="<table style=\"width:100%;font-size:0.9em;\">";
-  r.innerHTML+="<tr><td style=\"color:#aaa;padding:5px 0;\">Title:</td><td>"+(postData.title||"")+"</td></tr>";
-  r.innerHTML+="<tr><td style=\"color:#aaa;padding:5px 0;\">Metal:</td><td>"+(postData.metal||"")+"</td></tr>";
-  r.innerHTML+="<tr><td style=\"color:#aaa;padding:5px 0;\">Type:</td><td>"+(postData.type||"")+"</td></tr>";
-  r.innerHTML+="<tr><td style=\"color:#aaa;padding:5px 0;\">Price:</td><td>"+fmt(parseFloat(postData.price)||0)+"</td></tr>";
-  r.innerHTML+="<tr><td style=\"color:#aaa;padding:5px 0;\">Grade:</td><td>"+(postData.grade||"")+"</td></tr>";
-  r.innerHTML+="<tr><td style=\"color:#aaa;padding:5px 0;\">Seller:</td><td>"+(postData.name||"")+"</td></tr>";
-  r.innerHTML+="<tr><td style=\"color:#aaa;padding:5px 0;\">Location:</td><td>"+(postData.city||"")+" "+(postData.zip||"")+"</td></tr>";
-  r.innerHTML+="</table>";
+  var rows="";
+  rows+="<tr><td style=\"color:#aaa;padding:6px 8px;min-width:80px;\">Title</td><td><strong>"+(postData.title||"")+"</strong></td></tr>";
+  rows+="<tr><td style=\"color:#aaa;padding:6px 8px;\">Metal</td><td>"+(postData.metal||"")+"</td></tr>";
+  rows+="<tr><td style=\"color:#aaa;padding:6px 8px;\">Type</td><td>"+(postData.type||"")+"</td></tr>";
+  rows+="<tr><td style=\"color:#aaa;padding:6px 8px;\">Weight</td><td>"+(postData.weight||0)+" troy oz</td></tr>";
+  rows+="<tr><td style=\"color:#aaa;padding:6px 8px;\">Price</td><td><strong style=\"color:#4caf50;\">"+fmt(parseFloat(postData.price)||0)+"</strong></td></tr>";
+  rows+="<tr><td style=\"color:#aaa;padding:6px 8px;\">Grade</td><td>"+(postData.grade||"")+"</td></tr>";
+  rows+="<tr><td style=\"color:#aaa;padding:6px 8px;\">Seller</td><td>"+(postData.name||"")+"</td></tr>";
+  rows+="<tr><td style=\"color:#aaa;padding:6px 8px;\">Email</td><td>"+(postData.email||"")+"</td></tr>";
+  rows+="<tr><td style=\"color:#aaa;padding:6px 8px;\">Location</td><td>"+(postData.city||"")+" "+(postData.zip||"")+"</td></tr>";
+  r.innerHTML="<table style=\"width:100%;font-size:0.9em;border-collapse:collapse;\">"+rows+"</table>";
 }
 function publishListing(){
   var newId=LISTINGS.length;
