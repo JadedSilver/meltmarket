@@ -8,7 +8,7 @@
 <meta name="keywords" content="melt calculator, silver melt value, gold melt value, coin values, red book, junk silver, numismatic, precious metals marketplace, bullion">
 <meta property="og:title" content="MeltMarket - Precious Metals Calculator & Marketplace">
 <meta property="og:description" content="Free melt calculator with live Kitco prices, Red Book coin grade values, and a local precious metals marketplace.">
-<meta property="og:url" content="https://jadedsilver.github.io/meltmarket/">
+<meta property="og:url" content="https://meltmarketexchange.com/">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MeltMarket - Precious Metals Calculator & Marketplace">
@@ -735,7 +735,7 @@ if(e.target&&e.target.classList.contains("share-btn")){
 var lid=e.target.getAttribute("data-share-id");
 var li=LISTINGS.filter(function(l){return l.id==lid;})[0];
 if(li){
-var txt="Check out this listing on MeltMarket: "+li.title+" - "+fmt(li.price)+" - https://jadedsilver.github.io/meltmarket/";
+var txt="Check out this listing on MeltMarket: "+li.title+" - "+fmt(li.price)+" - https://meltmarketexchange.com/";
 if(navigator.clipboard){navigator.clipboard.writeText(txt).then(function(){e.target.textContent="\u2713";setTimeout(function(){e.target.innerHTML="&#x1F517;";},2000);});}
 else{alert("Copy: "+txt);}
 }
